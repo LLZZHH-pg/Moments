@@ -27,7 +27,7 @@ public class LoginControl extends HttpServlet {
             UserControl.loginUser(account, password);
             HttpSession session = req.getSession();
             session.setAttribute("user", account);
-            resp.sendRedirect(req.getContextPath() + "/square.jsp");
+            resp.sendRedirect(req.getContextPath() + "/personal.jsp");
 
         } catch (SQLException e) {
             System.err.println("login fail: " + e.getMessage());

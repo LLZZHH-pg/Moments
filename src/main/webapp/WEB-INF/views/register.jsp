@@ -10,6 +10,7 @@
             let error = '<%= request.getAttribute("error") %>';
             if (error !== "null") {
                 alert(error);
+                <% session.removeAttribute("error");%>
             }
 
             let successMsg = "<%= session.getAttribute("registerSuccess") %>";

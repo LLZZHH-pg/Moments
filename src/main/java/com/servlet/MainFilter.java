@@ -20,7 +20,7 @@ public class MainFilter implements Filter{
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
         // 允许访问的路径
-        boolean allowed = path.startsWith("/login")||path.startsWith("/register")||path.startsWith("/resources/static/");
+        boolean allowed = path.startsWith("/login")||path.startsWith("/register")||path.startsWith("/resources/static/")||path.startsWith("/personal");
 
         // 已登录或访问白名单路径
         if (allowed || (session != null && session.getAttribute("user") != null)) {

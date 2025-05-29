@@ -10,6 +10,7 @@
             let error = '<%= request.getAttribute("error") %>';
             if (error !== "null") {
                 alert(error);
+                <% session.removeAttribute("error");%>
                 window.location.href = '${pageContext.request.contextPath}/login';
             }
         };
