@@ -24,11 +24,11 @@ public class LoginControl extends HttpServlet {
         String password = req.getParameter("password");
 
         try {
-            UserControl.loginUser(account, password);
+            String userid=UserControl.loginUser(account, password);
             HttpSession session = req.getSession();
             session.setAttribute("user", account);
+            session.setAttribute("userid", userid);
             resp.sendRedirect(req.getContextPath() + "/personal.jsp");
-
         } catch (SQLException e) {
             System.err.println("login fail: " + e.getMessage());
             req.setAttribute("error", e.getMessage());

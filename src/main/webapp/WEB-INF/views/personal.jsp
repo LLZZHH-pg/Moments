@@ -124,14 +124,30 @@
                         placeholder: '在这里书写...',
                         MENU_CONF: {
                             uploadImage: {
-                                fieldName: 'your-fileName',
-                                base64LimitSize: 10 * 1024 * 1024 // 10M 以下插入 base64
+                                server: '${pageContext.request.contextPath}/upload',
+                                fieldName: 'file',
+                                maxFileSize: 5 * 1024 * 1024,
+                                base64LimitSize: 0, // 禁用base64
+                                customInsert: function(res, insertFn) {
+                                    if (res.errno === 0 && res.data && res.data.url) {
+                                        insertFn(res.data.url, '', ''); // 插入图片
+                                    } else {
+                                        alert('图片上传失败: ' + (res.message || '未知错误'));
+                                    }
+                                }
+                            },
+                            uploadVideo: {
+                                server: '${pageContext.request.contextPath}/upload',
+                                fieldName: 'file',
+                                maxFileSize: 20 * 1024 * 1024,
+                                base64LimitSize: 0
+
                             }
                         },
-                        onChange(editor) {
-                            const html = editor.getHtml();
-                            console.log('editor content', html);
-                        }
+                        // onChange(editor) {
+                        //     const html = editor.getHtml();
+                        //     console.log('editor content', html);
+                        // }
                     }
                 });
 

@@ -81,7 +81,7 @@ public class UserControl {
         return "000001";
     }
 
-    public static void loginUser(String account, String password) throws SQLException, ClassNotFoundException {
+    public static String loginUser(String account, String password) throws SQLException, ClassNotFoundException {
         Connection conn = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -98,6 +98,8 @@ public class UserControl {
                 ResultSet rs = stmt.executeQuery();
                 if (!rs.next()) {
                     throw new SQLException("邮箱或密码错误");
+                }else{
+                    return rs.getString("UID");
                 }
             }
             else if (account.matches(".*[a-zA-Z].*")) {
@@ -108,6 +110,8 @@ public class UserControl {
                 ResultSet rs = stmt.executeQuery();
                 if (!rs.next()) {
                     throw new SQLException("用户名或密码错误");
+                }else {
+                    return rs.getString("UID");
                 }
             }
             else if( account.matches("\\d{11}")) {
@@ -119,6 +123,8 @@ public class UserControl {
                 ResultSet rs = stmt.executeQuery();
                 if (!rs.next()) {
                     throw new SQLException("电话或密码错误");
+                }else{
+                    return rs.getString("UID");
                 }
             }
             else{

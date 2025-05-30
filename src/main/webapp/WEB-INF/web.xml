@@ -4,4 +4,13 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+<!--    <servlet>-->
+<!--      <servlet-name>default</servlet-name>-->
+<!--      <url-pattern>/uploads/*</url-pattern>-->
+<!--    </servlet>-->
+<!--    <servlet-mapping>-->
+<!--      <servlet-name>default</servlet-name>-->
+<!--      <url-pattern>/uploads/*</url-pattern>-->
+<!--    </servlet-mapping>-->
 </web-app>
+

@@ -19,17 +19,16 @@ public class PersonalControl extends HttpServlet {
     }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // 设置请求和响应编码
+
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
-        // 获取表单参数
         String state = req.getParameter("state");
         String content = req.getParameter("content");
 
-        // 获取当前用户信息
         HttpSession session = req.getSession();
-        Object user = session.getAttribute("user");  // 假设用户信息存储在session中
+        String userId = (String) session.getAttribute("userid");
+//        Object user = session.getAttribute("user");
 
 // 如果用户未登录，重定向到登录页面
 //        if (user == null) {
@@ -42,17 +41,17 @@ public class PersonalControl extends HttpServlet {
             if ("private".equals(state)) {
                 // 处理私密发布逻辑
                 // savePrivateContent(user, content);
-                ContentControl.storage(user, content, state);
+                ContentControl.storage(userId, content, state);
                 session.setAttribute("message", "内容已上传");
             } else if ("public".equals(state)) {
                 // 处理公开发布逻辑
                 // savePublicContent(user, content);
-                ContentControl.storage(user, content, state);
+                ContentControl.storage(userId, content, state);
                 session.setAttribute("message", "内容已发布到广场");
             }else if("save".equals(state)) {
                 // 处理保存草稿逻辑
                 // saveDraftContent(user, content);
-                ContentControl.storage(user, content, state);
+                ContentControl.storage(userId, content, state);
                 session.setAttribute("message", "草稿已保存");
             }
 
