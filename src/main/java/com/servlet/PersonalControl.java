@@ -15,8 +15,20 @@ import com.model.ContentControl;
 public class PersonalControl extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 检查用户是否已登录
+        HttpSession session = req.getSession();
+        String userId = (String) session.getAttribute("userid");
+
+        // 如果用户未登录，重定向到登录页面
+        if (userId == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        // 用户已登录，转发到个人页面
         req.getRequestDispatcher("/WEB-INF/views/personal.jsp").forward(req, resp);
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -30,32 +42,35 @@ public class PersonalControl extends HttpServlet {
         String userId = (String) session.getAttribute("userid");
 //        Object user = session.getAttribute("user");
 
-// 如果用户未登录，重定向到登录页面
-//        if (user == null) {
-//
-//            resp.sendRedirect(req.getContextPath() + "/login");
-//            return;
-//        }
-
+        // 如果用户未登录，重定向到登录页面
+        if (userId == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+        String contentId = req.getParameter("contentId");
         try {
             if ("private".equals(state)) {
                 // 处理私密发布逻辑
                 // savePrivateContent(user, content);
-                ContentControl.storage(userId, content, state);
+                ContentControl.storage(userId, content, state, contentId);
                 session.setAttribute("message", "内容已上传");
             } else if ("public".equals(state)) {
                 // 处理公开发布逻辑
                 // savePublicContent(user, content);
-                ContentControl.storage(userId, content, state);
+                ContentControl.storage(userId, content, state,contentId);
                 session.setAttribute("message", "内容已发布到广场");
             }else if("save".equals(state)) {
                 // 处理保存草稿逻辑
                 // saveDraftContent(user, content);
-                ContentControl.storage(userId, content, state);
+                ContentControl.storage(userId, content, state,contentId);
                 session.setAttribute("message", "草稿已保存");
             }
 
 //            resp.sendRedirect(req.getContextPath() + "/personal");
+            req.getRequestDispatcher("/WEB-INF/views/personal.jsp").forward(req, resp);
+        } catch (SQLException e) {
+            session.setAttribute("error", "数据库操作失败：" + e.getMessage());
+            e.printStackTrace();
             req.getRequestDispatcher("/WEB-INF/views/personal.jsp").forward(req, resp);
         } catch (Exception e) {
             // 发生错误时

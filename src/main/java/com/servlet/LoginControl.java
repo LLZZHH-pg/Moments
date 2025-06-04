@@ -28,7 +28,7 @@ public class LoginControl extends HttpServlet {
             HttpSession session = req.getSession();
             session.setAttribute("user", account);
             session.setAttribute("userid", userid);
-            resp.sendRedirect(req.getContextPath() + "/personal.jsp");
+            resp.sendRedirect(req.getContextPath() + "/personal");
         } catch (SQLException e) {
             System.err.println("login fail: " + e.getMessage());
             req.setAttribute("error", e.getMessage());

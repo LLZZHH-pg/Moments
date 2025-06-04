@@ -20,7 +20,8 @@ public class MainFilter implements Filter{
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
         // 允许访问的路径
-        boolean allowed = path.startsWith("/login")||path.startsWith("/register")||path.startsWith("/resources/static/")||path.startsWith("/personal")||path.startsWith("/upload");
+        boolean allowed = path.startsWith("/login")||path.startsWith("/register")||path.startsWith("/resources/static/");
+//                ||path.startsWith("/personal")||path.startsWith("/upload");
 
         if (allowed || (session != null && session.getAttribute("user") != null)) {
             chain.doFilter(request, response);
