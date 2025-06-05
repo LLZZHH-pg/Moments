@@ -16,15 +16,15 @@ import java.util.List;
 @WebServlet("/getContents")
 public class PersonalControl_Getdata extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json;charset=UTF-8");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
 
-        HttpSession session = req.getSession();
+        HttpSession session = request.getSession();
         String userId = (String) session.getAttribute("userid");
 
         // 如果用户未登录，返回错误信息
         if (userId == null) {
-            resp.getWriter().write("{\"error\": \"用户未登录\"}");
+            response.getWriter().write("{\"error\": \"用户未登录\"}");
             return;
         }
 
@@ -36,10 +36,10 @@ public class PersonalControl_Getdata extends HttpServlet {
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(contents);
 
-            resp.getWriter().write(json);
+            response.getWriter().write(json);
 
         } catch (SQLException | ClassNotFoundException e) {
-            resp.getWriter().write("{\"error\": \"数据库错误: " + e.getMessage() + "\"}");
+            response.getWriter().write("{\"error\": \"数据库错误: " + e.getMessage() + "\"}");
             e.printStackTrace();
         }
     }

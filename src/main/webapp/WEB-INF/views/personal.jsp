@@ -109,6 +109,8 @@
 </div>
 <script src="https://unpkg.com/@wangeditor-next/editor@latest/dist/index.js"></script>
 <script>
+    let insertedImages = new Set();
+    let currentContentId = null;
     document.addEventListener('DOMContentLoaded', function() {
         loadPersonalHome()
         try {
@@ -117,36 +119,48 @@
                 selector: '#editor-container',
                 config: {
                     placeholder: '在这里书写...',
+                    // html: {
+                    //     style: true, // 允许内联样式
+                    //     class: true, // 允许HTML类
+                    //     parseFilterRules: () => true, // 让所有规则都通过
+                    //     renderElmRules: () => true,
+                    //     skipWhitelist: true, // 跳过白名单过滤
+                    //     ignoreWhitelist: true // 忽略白名单规则
+                    // },
                     MENU_CONF: {
                         uploadImage: {
                             server: '${pageContext.request.contextPath}/upload',
                             fieldName: 'file',
                             maxFileSize: 5 * 1024 * 1024,
-                            base64LimitSize: 0, // 禁用base64
+                            base64LimitSize: 0,
                             customInsert: function(res, insertFn) {
                                 if (res.errno === 0 && res.data && res.data.url) {
-                                    insertFn(res.data.url, '', ''); // 插入图片
+                                    insertFn(res.data.url, '', '');
+                                    insertedImages.add(res.data.url);
                                 } else {
                                     alert('图片上传失败: ' + (res.message || '未知错误'));
                                 }
                             }
                         },
-                        uploadVideo: {
-                            server: '${pageContext.request.contextPath}/upload',
-                            fieldName: 'file',
-                            maxFileSize: 20 * 1024 * 1024,
-                            base64LimitSize: 0
-                        }
-                    }
-                }
+                        <%--uploadVideo: {--%>
+                        <%--    server: '${pageContext.request.contextPath}/upload',--%>
+                        <%--    fieldName: 'file',--%>
+                        <%--    maxFileSize: 20 * 1024 * 1024,--%>
+                        <%--    base64LimitSize: 0--%>
+                        <%--}--%>
+                    },
+                },
             });
 
-            window.toolbar = E.createToolbar({
-                editor: window.editor,
-                selector: '#editor-toolbar',
-                config: {},
-                mode: 'default',
-            });
+
+           window.toolbar = E.createToolbar({
+               editor: window.editor,
+               selector: '#editor-toolbar',
+               config: {
+                   excludeKeys: ['group-video']
+               },
+               mode: 'default',
+           });
         } catch (error) {
             console.error('编辑器初始化失败:', error);
         }
@@ -193,7 +207,6 @@
     }
 
     // 创建内容卡片
-    // 创建内容卡片（修改后）
     function createContentCard(content) {
         const card = document.createElement('div');
         card.className = 'card mb-3';
@@ -257,9 +270,44 @@
         cardHeader.appendChild(badgeContainer);
 
         // 卡片主体
+        // const cardBody = document.createElement('div');
+        // cardBody.className = 'card-body';
+        // cardBody.innerHTML = content.content;
         const cardBody = document.createElement('div');
-        cardBody.className = 'card-body';
-        cardBody.innerHTML = content.content;
+        cardBody.className = 'card-body editor-container';
+        cardBody.id = 'content-editor-' + content.id;
+
+// 先用普通div展示内容，等DOM渲染后再初始化编辑器
+//         const tempDiv = document.createElement('div');
+//         tempDiv.innerHTML = content.content;
+//         cardBody.appendChild(tempDiv);
+
+// 延迟初始化编辑器，确保DOM已经渲染
+
+            setTimeout(() => {
+                try {
+                    const E = window.wangEditor;
+                    const contentEditor = E.createEditor({
+                        selector: '#content-editor-' + content.id,
+                        config: {
+                            readOnly: true,
+                            placeholder: '',
+                            // html: {
+                            //     style: true,
+                            //     class: true,
+                            //     parseFilterRules: () => true,
+                            //     renderElmRules: () => true,
+                            //     skipWhitelist: true,
+                            //     ignoreWhitelist: true
+                            // }
+                        }
+                    });
+                    contentEditor.setHtml(content.content, { ignoreWhitelist: true });
+                } catch (error) {
+                    console.error('内容编辑器初始化失败:', error);
+                    cardBody.innerHTML = content.content;
+                }
+            }, 10); // 使用短延迟，确保DOM已渲染
 
         card.appendChild(cardHeader);
         card.appendChild(cardBody);
@@ -319,17 +367,54 @@
         // 切换到编辑标签页
         document.getElementById('write-tab').click();
 
+        // 重置跟踪的图片集合
+        insertedImages.clear();
+        currentContentId = contentId;
+
         // 设置编辑器内容
         if (window.editor) {
-            window.editor.setHtml(contentHtml);
+            window.editor.setHtml(contentHtml, { ignoreWhitelist: true });
+            // window.editor.setHtml(contentHtml);
             // 设置当前编辑ID
             document.getElementById('editor-container').dataset.editingId = contentId;
+
+            const initialImages = window.editor.getElemsByType('image');
+            initialImages.forEach(img => {
+                if (img.src) {
+                    insertedImages.add(img.src);
+                }
+            });
         }
     }
-
+    // 删除服务器文件
+    function deleteFileOnServer(fileUrl) {
+        fetch('${pageContext.request.contextPath}/deleteFile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'fileUrl=' + encodeURIComponent(fileUrl)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('文件删除失败:', data.message);
+                }
+            })
+            .catch(error => console.error('删除请求失败:', error));
+    }
     // 删除内容
     function deleteContent(contentId) {
         if (!confirm('确定要删除这条内容吗？')) return;
+
+        // 获取内容卡片元素
+        const card = document.querySelector(`.card[data-id="`+contentId+`"]`);
+        if (!card) {
+            console.error('找不到内容卡片');
+            return;
+        }
+        // 获取内容HTML
+        const contentHtml = card.querySelector('.card-body').innerHTML;
 
         fetch('${pageContext.request.contextPath}/deleteContent', {
             method: 'POST',
@@ -339,6 +424,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    const imageUrls = Array.from(contentHtml.matchAll(/<img[^>]+src="([^"]+)"/g)).map(match => match[1]);
+                    // 删除每张图片
+                    imageUrls.forEach(url => {
+                        deleteFileOnServer(url);
+                    });
+
                     loadPersonalHome();
                     <%--document.querySelector(`.card[data-id="${contentId}"]`).remove();--%>
                 } else {
@@ -356,7 +447,24 @@
         }
 
         const content = window.editor.getHtml();
-        const contentId = document.getElementById('editor-container').dataset.editingId;
+        const contentId = currentContentId || document.getElementById('editor-container').dataset.editingId;
+
+        // 获取当前内容中的所有图片
+        const currentImages = new Set();
+        const imageElems = window.editor.getElemsByType('image');
+        imageElems.forEach(img => {
+            if (img.src) {
+                currentImages.add(img.src);
+            }
+        });
+
+        // 找出未使用的图片（已删除的图片）
+        const unusedImages = new Set([...insertedImages].filter(src => !currentImages.has(src)));
+
+        // 删除未使用的图片
+        unusedImages.forEach(src => {
+            deleteFileOnServer(src);
+        });
 
         // 创建表单
         const form = document.createElement('form');
@@ -390,6 +498,10 @@
         document.body.appendChild(form);
         form.submit();
         document.body.removeChild(form);
+
+        // 重置状态
+        insertedImages.clear();
+        currentContentId = null;
     }
 </script>
 </body>

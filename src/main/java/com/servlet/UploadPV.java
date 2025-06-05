@@ -25,6 +25,7 @@ public class UploadPV extends HttpServlet{
     private static final String UPLOAD_DIR = "uploads"; // 上传目录名
 //private static final String UPLOAD_DIR = "D:\\jweb-endwork\\uploads";
 
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
