@@ -4,13 +4,10 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
-<!--    <servlet>-->
-<!--      <servlet-name>default</servlet-name>-->
-<!--      <url-pattern>/uploads/*</url-pattern>-->
-<!--    </servlet>-->
-<!--    <servlet-mapping>-->
-<!--      <servlet-name>default</servlet-name>-->
-<!--      <url-pattern>/uploads/*</url-pattern>-->
-<!--    </servlet-mapping>-->
+  <!-- web.xml -->
+  <context-param>
+    <param-name>uploadPath</param-name>
+    <param-value>D:/jweb-endwork/uploads</param-value>
+  </context-param>
 </web-app>
 

@@ -10,19 +10,21 @@ import java.io.IOException;
 
 @WebServlet("/deleteFile")
 public class DeletePV extends HttpServlet {
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // 使用getServletContext().getInitParameter获取物理路径
+        String uploadPath = getServletContext().getInitParameter("uploadPath");
+
         String fileUrl = request.getParameter("fileUrl");
-        String contextPath = request.getContextPath();
 
         // 从URL中提取文件名
         String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
 
-        // 获取服务器上的实际文件路径
-        String uploadDir = getServletContext().getRealPath("") + File.separator + "uploads";
-        String filePath = uploadDir + File.separator + fileName;
+        // 使用物理路径
+        String filePath = uploadPath + File.separator + fileName;
 
         File file = new File(filePath);
         boolean success = false;

@@ -22,17 +22,19 @@ import java.util.UUID;
 )
 
 public class UploadPV extends HttpServlet{
-    private static final String UPLOAD_DIR = "uploads"; // 上传目录名
-//private static final String UPLOAD_DIR = "D:\\jweb-endwork\\uploads";
-
+// 修改上传目录路径
+    private static final String UPLOAD_DIR = "D:/jweb-endwork/uploads";
+    private static final String URL_PATH = "/moments_war/upfile";
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         // 获取应用部署路径
-        String appPath = request.getServletContext().getRealPath("");
-        String uploadPath = appPath + File.separator + UPLOAD_DIR;
+//        String appPath = request.getServletContext().getRealPath("");
+//        String uploadPath = appPath + File.separator + UPLOAD_DIR;
 //        String uploadPath = UPLOAD_DIR;
+//        String uploadPath = request.getServletContext().getRealPath("/moments_war/upfile");
+        String uploadPath = getServletContext().getInitParameter("uploadPath");
 
         // 创建上传目录
         File uploadDir = new File(uploadPath);
@@ -57,9 +59,8 @@ public class UploadPV extends HttpServlet{
                 Files.copy(fileContent, new File(filePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // 构建访问URL
-            String fileUrl = request.getContextPath() + "/" + UPLOAD_DIR + "/" + uniqueFileName;
-//            String fileUrl = "/uploads/" + uniqueFileName;
+            // 构建访问URL - 使用映射后的URL路径
+            String fileUrl = URL_PATH + "/" + uniqueFileName;
 
             // 返回JSON响应
             response.setContentType("application/json");
