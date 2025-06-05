@@ -118,7 +118,7 @@
             window.editor = E.createEditor({
                 selector: '#editor-container',
                 config: {
-                    placeholder: '在这里书写...',
+                    placeholder: '在这里书写...(文字少于2000字，图片少于10张)',
                     // html: {
                     //     style: true, // 允许内联样式
                     //     class: true, // 允许HTML类
@@ -447,7 +447,21 @@
         }
 
         const content = window.editor.getHtml();
+        const textContent = window.editor.getText().trim();
         const contentId = currentContentId || document.getElementById('editor-container').dataset.editingId;
+
+        // 前端验证：文字长度
+        if (textContent.length > 2000) {
+            alert('内容不能超过2000字！当前字数：' + textContent.length);
+            return;
+        }
+
+        // 前端验证：图片数量
+        const images = window.editor.getElemsByType('image');
+        if (images.length > 10) {
+            alert('图片不能超过10张！当前数量：' + images.length);
+            return;
+        }
 
         // 获取当前内容中的所有图片
         const currentImages = new Set();

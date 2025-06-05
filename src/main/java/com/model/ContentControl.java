@@ -6,34 +6,28 @@ import java.sql.*;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ContentControl {
 
-    public static void updateContent(String contentId, String newContent, String newState)
-            throws SQLException, ClassNotFoundException {
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = getConnection();
-            String sql = "UPDATE content SET content = ?, state = ?, time = ? WHERE id = ?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, newContent);
-            stmt.setString(2, newState);
-            stmt.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            stmt.setString(4, contentId);
-            stmt.executeUpdate();
-
-        } finally {
-            if (stmt != null) stmt.close();
-            if (conn != null) conn.close();
-        }
-    }
-
     public static void storage(String userId, String content, String state, String contentId)
             throws SQLException, ClassNotFoundException {
+        String plainText = content.replaceAll("<[^>]+>", "").trim();
+        if (plainText.length() > 2000) {
+            throw new IllegalArgumentException("内容不能超过2000字");
+        }
 
+        // 2. 检测图片数量
+        Pattern imgPattern = Pattern.compile("<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
+        Matcher imgMatcher = imgPattern.matcher(content);
+        int imgCount = 0;
+        while (imgMatcher.find()) {
+            imgCount++;
+            if (imgCount > 10) {
+                throw new IllegalArgumentException("图片不能超过10张");
+            }
+        }
         Connection conn = null;
         PreparedStatement stmt = null;
 
@@ -136,13 +130,13 @@ public class ContentControl {
 
         try {
             conn = getConnection();
-            // 添加用户ID验证
+
             String sql = "UPDATE content SET state = ?, time = ? WHERE id = ? AND uid = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newState);
             stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             stmt.setString(3, id);
-            stmt.setString(4, userId); // 验证当前用户
+            stmt.setString(4, userId);
             int updated = stmt.executeUpdate();
 
             if (updated == 0) {
